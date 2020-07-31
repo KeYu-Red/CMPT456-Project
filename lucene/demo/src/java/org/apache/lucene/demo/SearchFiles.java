@@ -17,25 +17,31 @@
 package org.apache.lucene.demo;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+//import java.io.BufferedReader;
+//import java.io.IOException;
+//import java.io.InputStreamReader;
+import java.io.*;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.Iterator;
+import java.lang.Long;
+
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
+
+import org.apache.lucene.util.*;
 
 /** Simple command-line based search demo. */
 public class SearchFiles {
@@ -58,8 +64,12 @@ public class SearchFiles {
     boolean raw = false;
     String queryString = null;
     int hitsPerPage = 10;
-    
+//    System.out.println("args.length =  "+ args.length);
+//    for(int i = 0;i < args.length;i++)
+//      System.out.println("argument "+ i + ": "+args[i]);
+
     for(int i = 0;i < args.length;i++) {
+
       if ("-index".equals(args[i])) {
         index = args[i+1];
         i++;
@@ -88,8 +98,13 @@ public class SearchFiles {
     }
     
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
+
     IndexSearcher searcher = new IndexSearcher(reader);
-    Analyzer analyzer = new StandardAnalyzer();
+    File file = new File("/lucene-solr/lucene/demo/src/java/org/apache/lucene/demo/StopWords.txt");
+    Reader br = new FileReader(file);
+    Analyzer analyzer = new CMPT456Analyzer(br);
+
+
 
     BufferedReader in = null;
     if (queries != null) {
@@ -98,6 +113,8 @@ public class SearchFiles {
       in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     }
     QueryParser parser = new QueryParser(field, analyzer);
+
+
     while (true) {
       if (queries == null && queryString == null) {                        // prompt the user
         System.out.println("Enter query: ");
@@ -132,6 +149,8 @@ public class SearchFiles {
         break;
       }
     }
+
+
     reader.close();
   }
 
